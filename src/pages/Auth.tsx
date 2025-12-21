@@ -37,30 +37,39 @@ export default function Auth() {
 
     setIsLoading(true);
 
-    if (isLogin) {
-      const { error } = await signIn(email, password);
-      if (error) {
-        if (error.message.includes('Invalid login credentials')) {
-          toast.error('Invalid email or password');
+    try {
+      if (isLogin) {
+        const { error } = await signIn(email, password);
+        if (error) {
+          if (error.message.includes('Invalid login credentials')) {
+            toast.error('Invalid email or password');
+          } else if (error.message.includes('Load failed') || error.message.includes('fetch')) {
+            toast.error('Connection error. Please try again.');
+          } else {
+            toast.error(error.message);
+          }
         } else {
-          toast.error(error.message);
+          toast.success('Welcome back!');
+          navigate('/');
         }
       } else {
-        toast.success('Welcome back!');
-        navigate('/');
-      }
-    } else {
-      const { error } = await signUp(email, password);
-      if (error) {
-        if (error.message.includes('already registered')) {
-          toast.error('This email is already registered');
+        const { error } = await signUp(email, password);
+        if (error) {
+          if (error.message.includes('already registered')) {
+            toast.error('This email is already registered. Try signing in instead.');
+            setIsLogin(true);
+          } else if (error.message.includes('Load failed') || error.message.includes('fetch')) {
+            toast.error('Connection error. Please try again.');
+          } else {
+            toast.error(error.message);
+          }
         } else {
-          toast.error(error.message);
+          toast.success('Account created! You are now logged in.');
+          navigate('/');
         }
-      } else {
-        toast.success('Account created! You are now logged in.');
-        navigate('/');
       }
+    } catch (err) {
+      toast.error('Connection error. Please check your network and try again.');
     }
 
     setIsLoading(false);
